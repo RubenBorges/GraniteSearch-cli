@@ -1,6 +1,6 @@
 TO BUILD:
 
-1) First, unzip the .tar file inside the directory: "ibm-granite30m"
+1) First, unzip the ".tar.gz" archive file inside of the directory: "ibm-granite30m"
 
 2) To enable automated building and cleaning of the program, enter the following commands from the project root:
                                                                                                                   chmod -x auto.sh
