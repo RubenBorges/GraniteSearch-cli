@@ -2,9 +2,10 @@
 #ifndef GRANITE_EMBEDDER_HPP
 #define GRANITE_EMBEDDER_HPP
 
-#include <vector>
 #include <string>
-#include "llama.h"
+#include <vector>
+
+#include <llama.h>
 
 class GraniteEmbedder {
 private:
@@ -20,5 +21,33 @@ public:
     std::vector<float> compute_embedding(const std::string& text);
     int get_dimension() const;
 };
+
+namespace granite{
+
+// Simple, effective rule-based sentence chunker for C++
+std::vector<std::string> split_into_sentences(const std::string& text) ;
+
+// Calculates the Cosine Similarity between two 384-dimensional arrays
+double calculate_cosine_similarity(const std::vector<float>& vecA, const std::vector<float>& vecB) ;
+// Struct to store un-embedded text metadata pairs
+struct RawChunk {
+    std::string text;
+    std::string source_doc; 
+};
+
+// Struct to guarantee sentences and vectors never lose alignment
+struct EmbeddedChunk {
+    std::string text;
+    std::string source_doc; 
+    std::vector<float> embedding;
+};
+
+struct SearchResult {
+    double score;
+    std::string text;
+    std::string source_doc; 
+};
+
+} // namespace granite
 
 #endif

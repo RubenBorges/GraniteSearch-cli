@@ -1,8 +1,12 @@
 // graniteembedder.cpp
 
-#include <graniteembedder.hpp>
+#include <cmath>
+#include <regex>
 #include <stdexcept>
-#include <algorithm>
+#include <string>
+#include <vector>
+
+#include <graniteembedder.hpp>
 
 // Constructor handles initialization and loading
 // Fix: Default argument (= 512) moved entirely to header file declaration
@@ -96,3 +100,51 @@ std::vector<float> GraniteEmbedder::compute_embedding(const std::string& text) {
 }
 
 int GraniteEmbedder::get_dimension() const { return EMBEDDING_DIM; }
+
+
+// Simple, effective rule-based sentence chunker for C++
+std::vector<std::string> granite::split_into_sentences(const std::string& text) {
+    std::vector<std::string> sentences;
+    std::regex sentence_regex("[^.!?]+([.!?]+|$)\\s*");
+    
+    auto words_begin = std::sregex_iterator(text.begin(), text.end(), sentence_regex);
+    auto words_end = std::sregex_iterator();
+
+    for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
+        std::smatch match = *i;
+        std::string str = match.str();
+        
+        str.erase(str.find_last_not_of(" \n\r\t") + 1);
+        if (!str.empty()) {
+            sentences.push_back(str);
+        }
+    }
+    return sentences;
+};
+
+// Calculates the Cosine Similarity between two 384-dimensional arrays
+double granite::calculate_cosine_similarity(const std::vector<float>& vecA, const std::vector<float>& vecB) {
+    if (vecA.size() != vecB.size()) {
+        throw std::invalid_argument("Vectors must be of the same dimension.");
+    }
+
+    double dot_product = 0.0;
+    double magnitude_A = 0.0;
+    double magnitude_B = 0.0;
+
+    for (size_t i = 0; i < vecA.size(); ++i) {
+        dot_product += static_cast<double>(vecA[i] * vecB[i]);
+        magnitude_A += static_cast<double>(vecA[i] * vecA[i]);
+        magnitude_B += static_cast<double>(vecB[i] * vecB[i]);
+    }
+
+    magnitude_A = std::sqrt(magnitude_A);
+    magnitude_B = std::sqrt(magnitude_B);
+
+    if (magnitude_A == 0.0 || magnitude_B == 0.0) {
+        return 0.0;
+    }
+
+    return dot_product / (magnitude_A * magnitude_B);
+};
+

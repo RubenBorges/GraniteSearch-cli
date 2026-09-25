@@ -1,81 +1,11 @@
-#include <iostream>
-#include <vector>
-#include <cmath>
-#include <stdexcept>
-#include <string>
-#include <iomanip>
-#include <format>
 #include <algorithm>
-#include <print>
-#include <regex>
 #include <fstream>
+#include <print>
 #include <sstream>
+#include <string>
+#include <vector>
+
 #include <graniteembedder.hpp>
-
-// Simple, effective rule-based sentence chunker for C++
-std::vector<std::string> split_into_sentences(const std::string& text) {
-    std::vector<std::string> sentences;
-    std::regex sentence_regex("[^.!?]+([.!?]+|$)\\s*");
-    
-    auto words_begin = std::sregex_iterator(text.begin(), text.end(), sentence_regex);
-    auto words_end = std::sregex_iterator();
-
-    for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
-        std::smatch match = *i;
-        std::string str = match.str();
-        
-        str.erase(str.find_last_not_of(" \n\r\t") + 1);
-        if (!str.empty()) {
-            sentences.push_back(str);
-        }
-    }
-    return sentences;
-}
-
-// Calculates the Cosine Similarity between two 384-dimensional arrays
-double calculate_cosine_similarity(const std::vector<float>& vecA, const std::vector<float>& vecB) {
-    if (vecA.size() != vecB.size()) {
-        throw std::invalid_argument("Vectors must be of the same dimension.");
-    }
-
-    double dot_product = 0.0;
-    double magnitude_A = 0.0;
-    double magnitude_B = 0.0;
-
-    for (size_t i = 0; i < vecA.size(); ++i) {
-        dot_product += static_cast<double>(vecA[i] * vecB[i]);
-        magnitude_A += static_cast<double>(vecA[i] * vecA[i]);
-        magnitude_B += static_cast<double>(vecB[i] * vecB[i]);
-    }
-
-    magnitude_A = std::sqrt(magnitude_A);
-    magnitude_B = std::sqrt(magnitude_B);
-
-    if (magnitude_A == 0.0 || magnitude_B == 0.0) {
-        return 0.0;
-    }
-
-    return dot_product / (magnitude_A * magnitude_B);
-}
-
-// Struct to store un-embedded text metadata pairs
-struct RawChunk {
-    std::string text;
-    std::string source_doc; 
-};
-
-// Struct to guarantee sentences and vectors never lose alignment
-struct EmbeddedChunk {
-    std::string text;
-    std::string source_doc; 
-    std::vector<float> embedding;
-};
-
-struct SearchResult {
-    double score;
-    std::string text;
-    std::string source_doc; 
-};
 
 int main(int argc, char* argv[]) {
     // Establish basic command-line instructions
@@ -89,7 +19,7 @@ int main(int argc, char* argv[]) {
     const std::string model_path = argv[1];
     std::string inputQuery{argv[2]};
 
-    std::vector<RawChunk> databaseChunks; 
+    std::vector<granite::RawChunk> databaseChunks; 
     
     // Modernized Loop: Open and read target files natively from disk
     for (int i = 3; i < argc; ++i) {
@@ -108,13 +38,13 @@ int main(int argc, char* argv[]) {
         fileStream.close();
         
         // Chunk the file text and track the exact filename as its origin ID!
-        std::vector<std::string> chunks = split_into_sentences(fileContent);
+        std::vector<std::string> chunks = granite::split_into_sentences(fileContent);
         for (const auto& sentence : chunks) {
             databaseChunks.push_back({sentence, filePath});
         }
     }
 
-    std::vector<EmbeddedChunk> vectorDatabase;
+    std::vector<granite::EmbeddedChunk> vectorDatabase;
     
     try {
         // STEP 1: Load up the model using the updated library
@@ -136,16 +66,16 @@ int main(int argc, char* argv[]) {
         std::vector<float> queryVector = embedder.compute_embedding(inputQuery);
         
         // COMPARE QUERY against database chunks safely
-        std::vector<SearchResult> results;
+        std::vector<granite::SearchResult> results;
         results.reserve(vectorDatabase.size()); 
 
         for (const auto& item : vectorDatabase) {
-            double similarity = calculate_cosine_similarity(queryVector, item.embedding);
+            double similarity = granite::calculate_cosine_similarity(queryVector, item.embedding);
             results.push_back({similarity * 100.0, item.text, item.source_doc});
         }
 
         // C++26/C++23 Lambda sorting
-        std::sort(results.begin(), results.end(), [](const SearchResult& a, const SearchResult& b) {
+        std::sort(results.begin(), results.end(), [](const granite::SearchResult& a, const granite::SearchResult& b) {
             return a.score > b.score; 
         });
 
