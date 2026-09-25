@@ -15,14 +15,14 @@ TO BUILD:
 TO USE:
 
       Usage:   ./dist/GraniteSearch [path_to_gguf_model] "[query]" [file1.txt] [file2.txt] ...
-      Example: 
-                
-                ./dist/GraniteSearch ./dist/ibm-granite30m/ibm-granite \
-                      "What does Linda like to do in the backyard?" \
-                      dist/docs/ai_programming.txt \
-                      dist/docs/baking_bread.txt \
-                      dist/docs/cpp_mechanics.txt \
-                      dist/docs/linda_the_dog.txt
+      
+      Test Example:                
+                    ./dist/GraniteSearch ./dist/ibm-granite30m/ibm-granite \
+                        "What does Linda like to do in the backyard?" \
+                        dist/docs/ai_programming.txt \
+                        dist/docs/baking_bread.txt \
+                        dist/docs/cpp_mechanics.txt \
+                        dist/docs/linda_the_dog.txt
 
 <img width="1920" height="1037" alt="image" src="https://github.com/user-attachments/assets/0ef3f9b7-cd33-44d5-b4c7-10a7fffcf0be" />
 
